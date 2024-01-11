@@ -1,8 +1,8 @@
 %global git0 https://github.com/rootless-containers/%{name}
 
 Name: slirp4netns
-Version: 1.2.0
-Release: 2%{?dist}
+Version: 1.2.1
+Release: 1%{?dist}
 Summary: slirp for network namespaces
 License: GPLv2
 URL: %{git0}
@@ -59,6 +59,14 @@ make DESTDIR=%{buildroot} install install-man
 %{_mandir}/man1/%{name}.1.gz
 
 %changelog
+* Tue Aug 22 2023 Jindrich Novy <jnovy@redhat.com> - 1.2.1-1
+- update to https://github.com/rootless-containers/slirp4netns/releases/tag/v1.2.1
+- Related: #2176055
+
+* Thu Mar 09 2023 Jindrich Novy <jnovy@redhat.com> - 1.2.0-3
+- BuildRequires: /usr/bin/go-md2man
+- Related: #2176055
+
 * Wed May 11 2022 Jindrich Novy <jnovy@redhat.com> - 1.2.0-2
 - BuildRequires: /usr/bin/go-md2man
 - Related: #2061390
