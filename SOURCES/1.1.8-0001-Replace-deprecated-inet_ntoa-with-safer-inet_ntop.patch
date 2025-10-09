@@ -1,0 +1,74 @@
+From 103cf5a3f83406f4a22b8d1899518e5fa4a351d8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>
+Date: Tue, 15 Feb 2022 11:46:06 +0400
+Subject: [PATCH] Replace deprecated inet_ntoa with safer inet_ntop
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+inet_ntoa() is a legacy API with MT issues. Use the recommended
+alternative instead. This makes some code checkers happy, and could
+potentially fix issues if other parts of the process were to use
+inet_ntoa() at the same time..
+
+Signed-off-by: Marc-André Lureau <marcandre.lureau@redhat.com>
+---
+ main.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/main.c b/main.c
+index c79508e10f4d..2c38dc0da1af 100644
+--- a/main.c
++++ b/main.c
+@@ -257,6 +257,7 @@ static int recvfd(int sock)
+ static int parent(int sock, int ready_fd, int exit_fd, const char *api_socket,
+                   struct slirp4netns_config *cfg, pid_t target_pid)
+ {
++    char str[INET6_ADDRSTRLEN];
+     int rc, tapfd;
+     if ((tapfd = recvfd(sock)) < 0) {
+         return tapfd;
+@@ -265,23 +266,22 @@ static int parent(int sock, int ready_fd, int exit_fd, const char *api_socket,
+     close(sock);
+     printf("Starting slirp\n");
+     printf("* MTU:             %d\n", cfg->mtu);
+-    printf("* Network:         %s\n", inet_ntoa(cfg->vnetwork));
+-    printf("* Netmask:         %s\n", inet_ntoa(cfg->vnetmask));
+-    printf("* Gateway:         %s\n", inet_ntoa(cfg->vhost));
+-    printf("* DNS:             %s\n", inet_ntoa(cfg->vnameserver));
+-    printf("* Recommended IP:  %s\n", inet_ntoa(cfg->recommended_vguest));
++    printf("* Network:         %s\n", inet_ntop(AF_INET, &cfg->vnetwork, str, sizeof(str)));
++    printf("* Netmask:         %s\n", inet_ntop(AF_INET, &cfg->vnetmask, str, sizeof(str)));
++    printf("* Gateway:         %s\n", inet_ntop(AF_INET, &cfg->vhost, str, sizeof(str)));
++    printf("* DNS:             %s\n", inet_ntop(AF_INET, &cfg->vnameserver, str, sizeof(str)));
++    printf("* Recommended IP:  %s\n", inet_ntop(AF_INET, &cfg->recommended_vguest, str, sizeof(str)));
+     if (api_socket != NULL) {
+         printf("* API Socket:      %s\n", api_socket);
+     }
+ #if SLIRP_CONFIG_VERSION_MAX >= 2
+     if (cfg->enable_outbound_addr) {
+         printf("* Outbound IPv4:    %s\n",
+-               inet_ntoa(cfg->outbound_addr.sin_addr));
++               inet_ntop(AF_INET, &cfg->outbound_addr.sin_addr, str, sizeof(str)));
+     }
+     if (cfg->enable_outbound_addr6) {
+-        char str[INET6_ADDRSTRLEN];
+-        if (inet_ntop(AF_INET6, &cfg->outbound_addr6.sin6_addr, str,
+-                      INET6_ADDRSTRLEN) != NULL) {
++        if (inet_ntop(AF_INET6, &cfg->outbound_addr6.sin6_addr,
++                      str, sizeof(str)) != NULL) {
+             printf("* Outbound IPv6:    %s\n", str);
+         }
+     }
+@@ -290,7 +290,7 @@ static int parent(int sock, int ready_fd, int exit_fd, const char *api_socket,
+         printf(
+             "WARNING: 127.0.0.1:* on the host is accessible as %s (set "
+             "--disable-host-loopback to prohibit connecting to 127.0.0.1:*)\n",
+-            inet_ntoa(cfg->vhost));
++            inet_ntop(AF_INET, &cfg->vhost, str, sizeof(str)));
+     }
+     if (cfg->enable_sandbox && geteuid() != 0) {
+         if ((rc = nsenter(target_pid, NULL, NULL, true)) < 0) {
+-- 
+2.34.1.428.gdcc0cd074f0c
+
