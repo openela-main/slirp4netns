@@ -1,7 +1,7 @@
 %global git0 https://github.com/rootless-containers/%{name}
 
 Name: slirp4netns
-Version: 1.3.2
+Version: 1.3.3
 Release: 1%{?dist}
 Summary: slirp for network namespaces
 License: GPLv2
@@ -59,6 +59,10 @@ make DESTDIR=%{buildroot} install install-man
 %{_mandir}/man1/%{name}.1.gz
 
 %changelog
+* Mon Jun 02 2025 Jindrich Novy <jnovy@redhat.com> - 1.3.3-1
+- update to https://github.com/rootless-containers/slirp4netns/releases/tag/v1.3.3
+- Resolves: RHEL-94765
+
 * Mon Feb 10 2025 Jindrich Novy <jnovy@redhat.com> - 1.3.2-1
 - update to https://github.com/rootless-containers/slirp4netns/releases/tag/v1.3.2
 - Related: RHEL-60277
